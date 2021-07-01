@@ -1,0 +1,5 @@
+﻿  RemoteCtrl.cpp
+F:\WorkSpaces\RemoteCtrl\RemoteCtrl\RemoteCtrl.cpp(52,18): warning C4101: 'buffer': unreferenced local variable
+  ServerSocket.cpp
+  Generating Code...
+  RemoteCtrl.vcxproj -> F:\WorkSpaces\RemoteCtrl\x64\Debug\RemoteCtrl.exe

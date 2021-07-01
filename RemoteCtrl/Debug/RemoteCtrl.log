@@ -1,0 +1,10 @@
+﻿  RemoteCtrl.cpp
+F:\WorkSpaces\RemoteCtrl\RemoteCtrl\RemoteCtrl.cpp(52,18): warning C4101: 'buffer': unreferenced local variable
+  ServerSocket.cpp
+F:\WorkSpaces\RemoteCtrl\RemoteCtrl\ServerSocket.cpp(4,21): error C2248: 'CServerSocket::CServerSocket': cannot access private member declared in class 'CServerSocket'
+F:\WorkSpaces\RemoteCtrl\RemoteCtrl\ServerSocket.h(22): message : see declaration of 'CServerSocket::CServerSocket'
+F:\WorkSpaces\RemoteCtrl\RemoteCtrl\ServerSocket.h(5): message : see declaration of 'CServerSocket'
+F:\WorkSpaces\RemoteCtrl\RemoteCtrl\ServerSocket.cpp(4,21): error C2248: 'CServerSocket::~CServerSocket': cannot access private member declared in class 'CServerSocket'
+F:\WorkSpaces\RemoteCtrl\RemoteCtrl\ServerSocket.h(28): message : see declaration of 'CServerSocket::~CServerSocket'
+F:\WorkSpaces\RemoteCtrl\RemoteCtrl\ServerSocket.h(5): message : see declaration of 'CServerSocket'
+  Generating Code...
