@@ -1,5 +1,8 @@
 ﻿  RemoteCtrl.cpp
-F:\WorkSpaces\RemoteCtrl\RemoteCtrl\RemoteCtrl.cpp(52,18): warning C4101: 'buffer': unreferenced local variable
+F:\WorkSpaces\RemoteCtrl\RemoteCtrl\ServerSocket.h(104,8): warning C4101: 'buffer': unreferenced local variable
+F:\WorkSpaces\RemoteCtrl\RemoteCtrl\ServerSocket.h(142,1): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
   ServerSocket.cpp
+F:\WorkSpaces\RemoteCtrl\RemoteCtrl\ServerSocket.h(104,8): warning C4101: 'buffer': unreferenced local variable
+F:\WorkSpaces\RemoteCtrl\RemoteCtrl\ServerSocket.h(142,1): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
   Generating Code...
   RemoteCtrl.vcxproj -> F:\WorkSpaces\RemoteCtrl\x64\Debug\RemoteCtrl.exe

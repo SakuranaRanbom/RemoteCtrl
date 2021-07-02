@@ -2,6 +2,76 @@
 #include "pch.h"
 #include "framework.h"
 
+class CPacket {
+public:
+	 CPacket():sHead(0), nLength(0), sCmd(0), sSum(0) {}
+	 CPacket(const CPacket& pack) {
+		 sHead = pack.sHead;
+		 nLength = pack.nLength;
+		 sCmd = pack.sCmd;
+		 strData = pack.strData;
+		 sSum = pack.sSum;
+	 }
+	 CPacket(const BYTE* pData, size_t& nSize) {
+		 size_t i = 0;
+		 for (; i < nSize; ++i) {
+			 if (*(WORD*)(pData + i) == 0xFEFF) {
+				 sHead = *(WORD*)(pData + i);
+				 i += 2;//如果数据表只有包头且正确，那么i+=2之后其大于nSize，仍出来
+				 break;
+			 }
+		 }
+		 if (i + 8 >= nSize) { //包解析完了，直接失败  4+ 2 + 2 + data
+			 nSize = 0;//用掉了0字节
+			 return;
+		 }
+		 nLength = *(DWORD*)(pData + i); i += 4;
+		 if (nLength + i > nSize) {			//包只收了一半
+			 nSize = 0;
+			 return;
+		 }
+		 sCmd = *(WORD*)(pData + i); i += 2;
+		 if (nLength > 4) {
+			 strData.resize(nLength - 2 - 2); //nlength  = sCmd + strData + sSum 
+			 memcpy((void*)strData.c_str(), pData + i, nLength - 4);
+			 i += nLength - 4; //始终让i保持在最新位
+		 }
+		 sSum = *(WORD*)(pData + i); i += 2;
+		 WORD sum = 0;
+		 for (int j = 0; j < strData.size(); ++j) {
+
+			 sum += BYTE(strData[i]) & 0xFF;
+		 }
+		 if (sum == sSum) {
+			 nSize = i; // head:2  length:4 data:nLength
+			 return;
+		 }
+		 else {
+			 nSize = 0;
+		 }
+	 }
+	 CPacket& operator=(const CPacket& pack) {
+		 if (this != &pack) {
+			 sHead = pack.sHead;
+			 nLength = pack.nLength;
+			 sCmd = pack.sCmd;
+			 strData = pack.strData;
+			 sSum = pack.sSum;
+		 }
+		 return *this;
+	 }
+	 ~CPacket() {}
+public:
+	WORD sHead;//包头 -固定位，用FE FF来代替
+	DWORD nLength;//包长度（从控制命令开始，到和校验结束）
+	WORD sCmd;//控制命令 （为了对齐，用WORD来，256本来就够了
+	std::string strData;//包数据
+	WORD sSum;//和校验
+
+};
+
+
+
 class CServerSocket
 {
 public:
@@ -35,7 +105,7 @@ public:
 		sockaddr_in  Client_Addr;
 		int cli_size = sizeof(m_socket);
 		m_client = accept(m_socket, (sockaddr*)&Client_Addr, &cli_size);
-		if (m_client == -1) {
+		if (m_client == -1) { 
 			return false;
 		}
 		return true;
@@ -43,18 +113,27 @@ public:
 		//send(Server_Socket, buffer, sizeof(buffer), 0); //win的write = send
 		
 	}
-
+#define BUFFER_SIZE 4096
 	int DealCommand() {
-		char buffer[1024];
+		char* buffer = new char[BUFFER_SIZE];
+		memset(buffer, 0, sizeof(buffer));
+		size_t index = 0;
 		if (m_client == -1) return -1;
 		while (true) {
 
-			int len = recv(m_client, buffer, sizeof(buffer), 0);
+			size_t len = recv(m_client, buffer, sizeof(buffer), 0);
 			if (len <= 0) {
 				return -1;
 			}
 			//TODO: 处理命令
-
+			index += len;
+			len = index;
+			m_packet = CPacket((BYTE*)buffer, len);
+			if (len > 0) { //解析成功了
+				memmove(buffer, buffer + len, BUFFER_SIZE - len);
+				index -= len;
+				return m_packet.sCmd;
+			}
 		}
 	}
 
@@ -63,13 +142,15 @@ public:
 		return send(m_client, pData, nSize, 0) > 0;
 	}
 private:
-	SOCKET m_client;
-	SOCKET m_socket;
+	SOCKET m_client = INVALID_SOCKET;//初始赋值无效套接字
+	SOCKET m_socket = INVALID_SOCKET;
+	CPacket m_packet;
 	CServerSocket& operator=(const CServerSocket& ss) {
 
 	} 
-	CServerSocket(const CServerSocket&) {
-
+	CServerSocket(const CServerSocket& ss) {
+		m_socket = ss.m_socket;
+		m_client = ss.m_client;
 	}
 	CServerSocket(){
 		if (InitSockEnv() == FALSE) {

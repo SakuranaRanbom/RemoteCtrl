@@ -34,21 +34,31 @@ int main()
         }
         else
         {
-            
+
             // TODO: code your application's behavior here.
             //校验
             //server; 
             CServerSocket* pserver = CServerSocket::getInstance();//静态方法直接调
-            if (pserver) {
-                if (pserver->InitSocket() == false) {
-                    MessageBox(NULL,_T(""), _T("网络初始化失败"), MB_OK | MB_ICONERROR);
-                    exit(0);
-                }
+            int count = 0;
+
+            if (pserver->InitSocket() == false) {
+                MessageBox(NULL, _T("网络初始化异常，未能成功初始化，请检测网络状态"), _T("网络初始化失败"), MB_OK | MB_ICONERROR);
+                exit(0);
+            }
+            while (CServerSocket::getInstance() != NULL) {
 
                 if (pserver->AcceptClient() == false) {
-
+                    if (count >= 3) {
+                        exit(0);
+                    }
+                    MessageBox(NULL, _T("无法正常接入用户，自动重试"), _T("接入用户失败"), MB_OK | MB_ICONERROR);
+                    count++;
                 }
+
+                int ret = pserver->DealCommand();
+                //TODO:处理命令
             }
+        
             SOCKET Server_Socket = socket(PF_INET, SOCK_STREAM, 0);
             sockaddr_in Server_Address, Client_Addr;
             memset(&Server_Address, 0, sizeof(Server_Address));
@@ -59,8 +69,8 @@ int main()
             bind(Server_Socket, (sockaddr*)&Server_Address, sizeof(Server_Address));
             //前期处理
             listen(Server_Socket, 1);//只有一个人控制,只监听一个人
-            char buffer[1024];
-
+            char *buffer = new char[4096];
+            memset(buffer, 0, 4096);
             int cli_size = sizeof(Client_Addr);
             //SOCKET client = accept(Server_Socket, (sockaddr*)&Client_Addr, &cli_size);
             //recv(Server_Socket, buffer, sizeof(buffer), 0); //Win的read  = recv
