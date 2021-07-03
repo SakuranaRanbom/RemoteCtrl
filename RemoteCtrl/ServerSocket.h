@@ -15,6 +15,9 @@ public:
 			 strData.resize(nSize);
 			 memcpy((void*)strData.c_str(), pData, nSize);
 		 }
+		 else {
+			 strData.clear();
+		 }
 		 sSum = 0;
 		 for (int j = 0; j < strData.size(); ++j) {
 
@@ -182,7 +185,7 @@ public:
 	}
 
 	bool GetFilePath(std::string& strPath) {
-		if (m_packet.sCmd == 2 || m_packet.sCmd == 3) { //查看文件  或  运行文件 指令
+		if (m_packet.sCmd >= 2 && m_packet.sCmd <= 4) { //查看文件  或  运行文件 指令
 
 			strPath = m_packet.strData;
 			return true;

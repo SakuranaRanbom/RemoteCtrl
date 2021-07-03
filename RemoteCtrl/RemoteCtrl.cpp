@@ -1,6 +1,8 @@
 // RemoteCtrl.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
-
+#define _CRT_SECURE_NO_DEPRECATE
+#define _CRT_SECURE_NO_WARNINGS
+#pragma warning(disable:4996)
 #include "pch.h"
 #include "framework.h"
 #include "RemoteCtrl.h"
@@ -120,6 +122,39 @@ int RunFile() {
 
 }
 
+int DownloadFile() {
+
+    std::string strPath;
+    CServerSocket::getInstance()->GetFilePath(strPath);
+    FILE* pFile = NULL; 
+    errno_t err = fopen_s( &pFile, strPath.c_str(), "rb");//从服务端下载，读。可以是文本，也可以是二进制，二进制不能用文本方式，文本可以用二进制方式，所以wb
+    if (err != 0) {
+        CPacket pack(4, NULL, 0);
+        CServerSocket::getInstance()->Send(pack);
+        return -1;
+    }
+    if (pFile != NULL) {
+        fseek(pFile, 0, SEEK_END);
+        long long data = _ftelli64(pFile);
+        CPacket head(4, (BYTE*)&data, 8);
+        fseek(pFile, 0, SEEK_SET);
+        char buffer[1024] = "";
+        size_t rlen = 0;
+        do {
+            rlen = fread(buffer, 1, 1024, pFile);
+            CPacket pack(4, (BYTE*)buffer, rlen);
+            CServerSocket::getInstance()->Send(pack);
+        } while (rlen >= 1024); //小于1024相对于读到文件末尾了
+
+        
+        fclose(pFile);//关闭文件
+    }
+
+    CPacket pack(4, NULL, 0); //收到空，客户端知道发到结尾了
+    CServerSocket::getInstance()->Send(pack);
+    return 0;
+    
+}
 
 
 int main()
@@ -195,6 +230,9 @@ int main()
                 break;
             case 3:
                 RunFile();
+                break;
+            case 4:
+                DownloadFile();
                 break;
             default:
                 break;
