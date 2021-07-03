@@ -6,6 +6,8 @@
 #include "RemoteCtrl.h"
 #include "ServerSocket.h"
 #include <direct.h>
+#include <io.h>
+#include <list>
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -42,6 +44,71 @@ int MakeDriverInfo() {//1:A   2:B   3:C   AB是软盘
     //CServerSocket::getInstance()->Send(pack); 无连接，先注释
     return 0;
 }
+
+
+typedef struct file_info {
+    file_info() {
+        isInvalid = 0;
+        isDirectory = 1;
+        hasNext = TRUE;
+        memset(szFileName, 0, sizeof(szFileName));
+    }//结构体，不用就没了，不用搞析构函数，也不用分配内存空间
+    BOOL isInvalid;//是否是有效目录 （快捷键无效）
+    BOOL isDirectory;//是否为目录
+    BOOL hasNext;
+    char szFileName[256];
+}FILEINFO, * PFILEINFO;
+
+int MakeDirectoryInfo() {
+    std::string strPath;
+    //std::list<FILEINFO> lstFileInfos;
+    if (CServerSocket::getInstance()->GetFilePath(strPath) == false) {
+        OutputDebugString(_T("当前命令非获取文件命令，解析错误"));
+        return -1;
+    }
+    if (_chdir(strPath.c_str())!= 0) {//切换失败，maybe没有权限
+        FILEINFO finfo;
+        finfo.isInvalid = 1;
+        finfo.isDirectory = TRUE;
+        finfo.hasNext = FALSE;
+        memcpy(finfo.szFileName, strPath.c_str(), strPath.size());
+        //lstFileInfos.push_back(finfo); 
+
+        CPacket pack(2, (BYTE*)&finfo, sizeof(finfo));
+        CServerSocket::getInstance()->Send(pack);
+        OutputDebugString(_T("没有权限访问目录"));
+        return -2;
+    }
+    _finddata_t fdata;
+    int hfind = 0;
+    if ((hfind = _findfirst("*", &fdata)) == -1) {//io.h，遍历文件，可以写通配符     结构体 ;查找失败，返回错误
+        OutputDebugString(_T("没有找到任何文件"));
+        return -3;
+    }
+    do {
+        FILEINFO finfo;
+        //finfo.isInvalid = 0; 默认就是0
+        finfo.isDirectory = (fdata.attrib & _A_SUBDIR) != 0; //判断是文件夹吗？
+        memcpy(finfo.szFileName, fdata.name, strlen(fdata.name));
+        //lstFileInfos.push_back(finfo);
+        CPacket pack(2, (BYTE*)&finfo, sizeof(finfo));
+        if (CServerSocket::getInstance()->Send(pack)) {
+            OutputDebugString(_T("发送失败"));
+            //return -4;
+        }
+    } while (!_findnext(hfind, &fdata));
+    //发送信息到控制端    注：如果文件数量太多【日志、临时文件夹】，上面的while会遍历很久，连接可能断开。
+    FILEINFO finfo;
+    finfo.hasNext = FALSE;
+    CPacket pack(2, (BYTE*)&finfo, sizeof(finfo));
+    if (CServerSocket::getInstance()->Send(pack)) {
+        OutputDebugString(_T("发送失败"));
+        //return -4;
+    }
+    return 0;
+
+}
+
 int main()
 {
     int nRetCode = 0;
@@ -109,6 +176,9 @@ int main()
             {
             case 1://查看磁盘分区
                 MakeDriverInfo();
+                break;
+            case 2://查看指定目录下的文件
+                MakeDirectoryInfo();
                 break;
             default:
                 break;

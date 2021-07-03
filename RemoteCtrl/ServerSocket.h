@@ -178,6 +178,17 @@ public:
 		return send(m_client, (const char*)&pack, pack.nLength+6, 0) > 0;
 
 	}
+
+	bool GetFilePath(std::string& strPath) {
+		if (m_packet.sCmd == 2) {
+
+			strPath = m_packet.strData;
+			return true;
+
+		}
+		return false;
+
+	}
 private:
 	SOCKET m_client = INVALID_SOCKET;//初始赋值无效套接字
 	SOCKET m_socket = INVALID_SOCKET;
