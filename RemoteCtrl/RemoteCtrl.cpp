@@ -109,6 +109,19 @@ int MakeDirectoryInfo() {
 
 }
 
+int RunFile() {
+    std::string strPath;
+    CServerSocket::getInstance()->GetFilePath(strPath);
+    ShellExecuteA(NULL, NULL, strPath.c_str(), NULL, NULL, SW_SHOWNORMAL);// (A是因为strPath多字节)句柄，Operation，Path
+    CPacket pack(3, NULL, 0);
+    CServerSocket::getInstance()->Send(pack);
+    return 0;
+
+
+}
+
+
+
 int main()
 {
     int nRetCode = 0;
@@ -179,6 +192,9 @@ int main()
                 break;
             case 2://查看指定目录下的文件
                 MakeDirectoryInfo();
+                break;
+            case 3:
+                RunFile();
                 break;
             default:
                 break;
