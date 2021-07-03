@@ -21,14 +21,14 @@ void Dump(BYTE* pData, size_t nSize) {
     for (size_t i = 0; i < nSize; ++i) {
         char buf[8] = "";
         if (i > 0 && i % 16 == 0) strOut += "\n";
-        snprintf(buf, sizeof(buf), "%02X", pData[i] & 0xFF);
+        snprintf(buf, sizeof(buf), "%02X ", pData[i] & 0xFF);
         strOut += buf;
     }
     strOut += "\n";
     OutputDebugStringA(strOut.c_str());
 }
 
-int MakeDriverInfo() {//1:A   2:B   3:C
+int MakeDriverInfo() {//1:A   2:B   3:C   AB是软盘
     string result = "";
     for (int i = 1; i <= 26; ++i) {
         if (_chdrive(i) == 0) {
@@ -38,7 +38,8 @@ int MakeDriverInfo() {//1:A   2:B   3:C
     }
     
     CPacket pack(1, (BYTE*)result.c_str(), result.size());
-    Dump((BYTE*)&pack, pack.nLength + 6);
+    Dump((BYTE*)pack.Data(), pack.Size());//pack.nLength + 6);
+    //CServerSocket::getInstance()->Send(pack); 无连接，先注释
     return 0;
 }
 int main()
@@ -102,7 +103,17 @@ int main()
                 //send(Server_Socket, buffer, sizeof(buffer), 0); //win的write = send
                 closesocket(Server_Socket); //与startup成对出现，清理网络//静态变量的初始化在首次调用时，销毁则是程序销毁时候销毁。如果是全局静态变量，则main函数前构造，main结束后析构。
             }*/
-            int m = MakeDriverInfo();
+            
+            int nCmd = 1;
+            switch (nCmd)
+            {
+            case 1://查看磁盘分区
+                MakeDriverInfo();
+                break;
+            default:
+                break;
+            }
+            
 
         }
     }

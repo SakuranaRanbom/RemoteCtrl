@@ -2,6 +2,8 @@
 #include "pch.h"
 #include "framework.h"
 
+#pragma pack(push)
+#pragma pack(1)
 class CPacket {
 public:
 	 CPacket():sHead(0), nLength(0), sCmd(0), sSum(0) {}
@@ -74,6 +76,19 @@ public:
 	 }
 	 ~CPacket() {}
 
+	 int Size() {
+		 return nLength + 6;
+	 }
+	 const char* Data() {
+		 strOut.resize(nLength + 6);
+		 BYTE* pData = (BYTE*)strOut.c_str();
+		 *(WORD*)pData = sHead; pData += 2;
+		 *(DWORD*)pData = nLength; pData += 4;
+		 *(WORD*)pData = sCmd; pData += 2;
+		 memcpy(pData, strData.c_str(), strData.size()); pData += strData.size();
+		 *(WORD*)pData = sSum;
+		 return strOut.c_str();
+	 }
 
 public:
 	WORD sHead;//包头 -固定位，用FE FF来代替
@@ -81,9 +96,10 @@ public:
 	WORD sCmd;//控制命令 （为了对齐，用WORD来，256本来就够了
 	std::string strData;//包数据
 	WORD sSum;//和校验
+	std::string strOut;
 
 };
-
+#pragma pack(pop)
 
 
 class CServerSocket
