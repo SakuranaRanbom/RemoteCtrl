@@ -5,6 +5,18 @@
 class CPacket {
 public:
 	 CPacket():sHead(0), nLength(0), sCmd(0), sSum(0) {}
+	 CPacket(WORD nCmd, const BYTE* pData, size_t nSize) {
+		 sHead = 0xFEFF;
+		 nLength = nSize + 2 + 2;
+		 sCmd = nCmd;
+		 strData.resize(nSize);
+		 memcpy((void*)strData.c_str(), pData, nSize);
+		 sSum = 0;
+		 for (int j = 0; j < strData.size(); ++j) {
+
+			 sSum += BYTE(strData[j]) & 0xFF;
+		 }
+	 }
 	 CPacket(const CPacket& pack) {
 		 sHead = pack.sHead;
 		 nLength = pack.nLength;
@@ -12,7 +24,7 @@ public:
 		 strData = pack.strData;
 		 sSum = pack.sSum;
 	 }
-	 CPacket(const BYTE* pData, size_t& nSize) {
+	 CPacket(const BYTE* pData, size_t& nSize) { //解包的重构
 		 size_t i = 0;
 		 for (; i < nSize; ++i) {
 			 if (*(WORD*)(pData + i) == 0xFEFF) {
@@ -40,7 +52,7 @@ public:
 		 WORD sum = 0;
 		 for (int j = 0; j < strData.size(); ++j) {
 
-			 sum += BYTE(strData[i]) & 0xFF;
+			 sum += BYTE(strData[j]) & 0xFF;
 		 }
 		 if (sum == sSum) {
 			 nSize = i; // head:2  length:4 data:nLength
@@ -61,6 +73,8 @@ public:
 		 return *this;
 	 }
 	 ~CPacket() {}
+
+
 public:
 	WORD sHead;//包头 -固定位，用FE FF来代替
 	DWORD nLength;//包长度（从控制命令开始，到和校验结束）
@@ -140,6 +154,13 @@ public:
 	bool Send(const char* pData, size_t nSize) {
 		if (m_client == -1) return false;
 		return send(m_client, pData, nSize, 0) > 0;
+	}
+
+	bool Send(const CPacket& pack) {
+
+		if (m_client == -1) return false;
+		return send(m_client, (const char*)&pack, pack.nLength+6, 0) > 0;
+
 	}
 private:
 	SOCKET m_client = INVALID_SOCKET;//初始赋值无效套接字
