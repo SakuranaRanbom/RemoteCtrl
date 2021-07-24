@@ -6,7 +6,12 @@ F:\WorkSpaces\RemoteCtrl\RemoteCtrl\RemoteCtrl.cpp(4): warning C4603: '_CRT_SECU
 F:\WorkSpaces\RemoteCtrl\RemoteCtrl\RemoteCtrl.cpp(4): message : Add macro to precompiled header instead of defining here
 F:\WorkSpaces\RemoteCtrl\RemoteCtrl\RemoteCtrl.cpp(6): message : use of precompiled header
 F:\WorkSpaces\RemoteCtrl\RemoteCtrl\ServerSocket.h(12,1): warning C4267: '=': conversion from 'size_t' to 'DWORD', possible loss of data
-F:\WorkSpaces\RemoteCtrl\RemoteCtrl\ServerSocket.h(139,8): warning C4101: 'buffer': unreferenced local variable
-F:\WorkSpaces\RemoteCtrl\RemoteCtrl\ServerSocket.h(177,1): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+F:\WorkSpaces\RemoteCtrl\RemoteCtrl\ServerSocket.h(150,8): warning C4101: 'buffer': unreferenced local variable
+F:\WorkSpaces\RemoteCtrl\RemoteCtrl\ServerSocket.h(188,1): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
 F:\WorkSpaces\RemoteCtrl\RemoteCtrl\RemoteCtrl.cpp(86,28): warning C4244: '=': conversion from 'intptr_t' to 'int', possible loss of data
+  ServerSocket.cpp
+F:\WorkSpaces\RemoteCtrl\RemoteCtrl\ServerSocket.h(12,1): warning C4267: '=': conversion from 'size_t' to 'DWORD', possible loss of data
+F:\WorkSpaces\RemoteCtrl\RemoteCtrl\ServerSocket.h(150,8): warning C4101: 'buffer': unreferenced local variable
+F:\WorkSpaces\RemoteCtrl\RemoteCtrl\ServerSocket.h(188,1): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  Generating Code...
   RemoteCtrl.vcxproj -> F:\WorkSpaces\RemoteCtrl\x64\Debug\RemoteCtrl.exe
